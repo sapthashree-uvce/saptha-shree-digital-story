@@ -110,7 +110,7 @@ export function Contact() {
                     </span>
                     <span className="min-w-0">
                       <span className="eyebrow block text-ink-muted">{label}</span>
-                      <span className="block truncate text-lg font-medium transition-colors group-hover:text-primary">
+                      <span className="block break-all text-base font-medium transition-colors group-hover:text-primary sm:text-lg">
                         {value}
                       </span>
                     </span>
