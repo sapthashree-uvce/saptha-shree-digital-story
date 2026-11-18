@@ -28,3 +28,10 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## Project rules
+
+- All portfolio copy, links and lists live in `src/lib/portfolio-data.ts`; section components in `src/components/portfolio/` only render it — edit content there, not in JSX.
+- The site is one long page at `/` with in-page section anchors (the owner explicitly asked for smooth scrolling between sections).
+- Contact form validation lives in `src/lib/contact-schema.ts` and is shared by the form and the server function, so client and server rules never drift.
+- Never pass portfolio classes through `cn()` with custom `text-*` utilities: tailwind-merge drops them as conflicting font-size/color classes; custom type-size utilities are named `display-*`.
