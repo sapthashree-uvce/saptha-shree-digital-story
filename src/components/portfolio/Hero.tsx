@@ -30,13 +30,13 @@ export function Hero() {
 
       <div className="relative mx-auto max-w-7xl px-5 sm:px-8">
         <h1 className="font-display display-mega font-extrabold text-foreground">
-          <span className="sr-only">Saptha Shree — AI &amp; Data Science student at UVCE Bengaluru, aspiring data engineer.</span>
+          <span className="sr-only">Saptha Shree — AI{"\u00a0"}&amp; DATA SCIENCE student at UVCE Bengaluru, aspiring data engineer.</span>
           <span aria-hidden="true" className="block">
             <Line delay={100}>
               <span className="text-primary">Saptha</span> Shree
             </Line>
             <Line delay={220}>
-              <span className="text-primary">AI</span> &amp; Data Science
+              <span className="text-primary">AI</span>{"\u00a0"}&amp; DATA SCIENCE
             </Line>
           </span>
         </h1>
