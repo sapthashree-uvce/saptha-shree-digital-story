@@ -1,7 +1,3 @@
-import lumenSweep from "@/assets/project-lumen-sweep.jpg";
-import precisionLanding from "@/assets/project-precision-landing.jpg";
-import pythonMini from "@/assets/project-python-mini.jpg";
-
 export const PROFILE = {
   name: "Saptha Shree",
   brand: "SAPTHA",
@@ -100,9 +96,6 @@ export type Project = {
   tags: string[];
   github: string;
   githubLabel: string;
-  image: string;
-  imageWidth: number;
-  imageHeight: number;
   status: "completed" | "ongoing";
 };
 
@@ -117,9 +110,6 @@ export const PROJECTS: Project[] = [
     tags: ["HTML", "CSS", "React.js", "Node.js", "Python"],
     github: "https://github.com/sapthashree-uvce/Solar-panel--Lumen-Sweep",
     githubLabel: "View repository",
-    image: lumenSweep,
-    imageWidth: 1600,
-    imageHeight: 1104,
     status: "completed",
   },
   {
@@ -132,9 +122,6 @@ export const PROJECTS: Project[] = [
     tags: ["Python", "OpenCV", "ArUco Marker Detection", "Ubuntu"],
     github: "https://github.com/sapthashree-uvce",
     githubLabel: "GitHub profile",
-    image: precisionLanding,
-    imageWidth: 1200,
-    imageHeight: 1200,
     status: "ongoing",
   },
 ];
@@ -152,9 +139,6 @@ export const MINI_PROJECTS = {
   ],
   tags: ["Python"],
   github: "https://github.com/sapthashree-uvce",
-  image: pythonMini,
-  imageWidth: 1200,
-  imageHeight: 1008,
 };
 
 export const ACHIEVEMENT = { title: "Strategy Sprint", result: "1st Place" };

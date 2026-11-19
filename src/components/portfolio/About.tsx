@@ -1,4 +1,3 @@
-import beyondDrawing from "@/assets/beyond-drawing.jpg";
 import { ABOUT_FACTS, HOBBIES } from "@/lib/portfolio-data";
 import { Reveal } from "./Reveal";
 import { SectionHeading } from "./SectionHeading";
@@ -16,24 +15,26 @@ export function About() {
         </SectionHeading>
 
         <div className="mt-16 grid gap-14 lg:grid-cols-12">
-          <div className="space-y-6 text-lg leading-relaxed text-ink-foreground/80 lg:col-span-6">
+          <div className="space-y-6 text-lg leading-relaxed text-ink-foreground/90 lg:col-span-6">
             <Reveal>
               <p className="text-2xl leading-snug text-ink-foreground sm:text-3xl">
-                I'm Saptha Shree, a second-year Artificial Intelligence and Data Science student at{" "}
-                <span className="serif-accent text-primary">UVCE, Bengaluru.</span>
+                I'm <span className="font-bold text-primary">Saptha Shree</span>, a second-year{" "}
+                <span className="font-bold text-ink-foreground">Artificial Intelligence and Data Science</span>{" "}
+                student at <span className="font-bold text-primary">UVCE, Bengaluru.</span>
               </p>
             </Reveal>
             <Reveal delay={80}>
               <p>
                 I enjoy exploring technology, understanding how things work, and transforming ideas into practical
-                solutions. My interests include Data Engineering, Data Analytics, Artificial Intelligence and
-                software development.
+                solutions. My interests include{" "}
+                <span className="font-bold text-ink-foreground">Data Engineering, Data Analytics, Artificial
+                Intelligence</span> and software development.
               </p>
             </Reveal>
             <Reveal delay={160}>
               <p>
-                I believe in learning by building, experimenting with new technologies, and continuously improving
-                my skills.
+                I believe in <span className="font-bold text-ink-foreground">learning by building</span>, experimenting
+                with new technologies, and continuously improving my skills.
               </p>
             </Reveal>
 
@@ -43,7 +44,7 @@ export function About() {
                 {HOBBIES.map((h) => (
                   <li
                     key={h}
-                    className="rounded-full border border-ink-line px-4 py-2 text-sm text-ink-foreground transition-colors duration-300 hover:border-primary hover:text-primary"
+                    className="rounded-full border border-ink-line px-4 py-2 text-sm font-bold text-ink-foreground transition-colors duration-300 hover:border-primary hover:text-primary"
                   >
                     {h}
                   </li>
@@ -64,18 +65,19 @@ export function About() {
                     key={fact.label}
                     className="grid grid-cols-[minmax(0,8.5rem)_minmax(0,1fr)] gap-4 border-t border-ink-line py-4 first-of-type:border-t-0"
                   >
-                    <dt className="text-sm text-ink-muted">{fact.label}</dt>
-                    <dd className={fact.label === "CGPA" ? "font-display text-3xl text-primary" : "text-sm font-medium"}>
+                    <dt className="text-sm font-semibold text-ink-muted">{fact.label}</dt>
+                    <dd
+                      className={
+                        fact.label === "CGPA"
+                          ? "font-display text-3xl text-primary"
+                          : "text-sm font-bold text-ink-foreground"
+                      }
+                    >
                       {fact.value}
                     </dd>
                   </div>
                 ))}
               </dl>
-            </Reveal>
-            <Reveal delay={260} className="absolute -bottom-10 -left-8 z-20 hidden w-36 sm:block">
-              <figure className="-rotate-6 overflow-hidden rounded-2xl border-4 border-ink shadow-float">
-                <img src={beyondDrawing} alt="Sketchbook with a pencil drawing" width={1008} height={1008} loading="lazy" className="aspect-square object-cover" />
-              </figure>
             </Reveal>
           </div>
         </div>

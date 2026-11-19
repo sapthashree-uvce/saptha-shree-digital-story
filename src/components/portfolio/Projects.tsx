@@ -29,16 +29,6 @@ function MiniProjects() {
               </TechTag>
             ))}
           </ul>
-          <div className="mt-8 hidden overflow-hidden rounded-2xl lg:block">
-            <img
-              src={MINI_PROJECTS.image}
-              alt="Laptop with Python code next to playing cards, dice and a calculator"
-              width={MINI_PROJECTS.imageWidth}
-              height={MINI_PROJECTS.imageHeight}
-              loading="lazy"
-              className="aspect-[4/3] w-full object-cover transition-transform duration-[1.4s] hover:scale-105"
-            />
-          </div>
         </div>
 
         <div className="lg:col-span-6 lg:col-start-7">
