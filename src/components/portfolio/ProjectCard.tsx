@@ -25,7 +25,7 @@ export function StatusBadge({ status }: { status: Project["status"] }) {
       <span className="size-1.5 animate-pulse-dot rounded-full bg-primary-foreground" /> Ongoing
     </span>
   ) : (
-    <span className="inline-flex items-center gap-2 rounded-full bg-background/90 px-3 py-1.5 text-xs font-semibold text-foreground backdrop-blur">
+    <span className="inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1.5 text-xs font-semibold text-foreground">
       Completed
     </span>
   );
@@ -45,17 +45,17 @@ export function ProjectCard({ project, aspect, className }: ProjectCardProps) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="relative block w-full overflow-hidden rounded-3xl bg-ink text-left"
+        className="relative block w-full overflow-hidden rounded-3xl border border-border bg-card text-left shadow-card transition-all duration-500 hover:-translate-y-1.5 hover:border-primary"
         aria-label={`View details for ${project.title}`}
       >
         <div className={cn("relative grid place-items-center overflow-hidden px-6 text-center", aspect)}>
           <span
             aria-hidden="true"
-            className="font-display text-7xl leading-none text-ink-foreground/10 transition-transform duration-[1.4s] ease-out group-hover:scale-110 sm:text-9xl"
+            className="font-display text-7xl leading-none text-foreground/10 transition-transform duration-[1.4s] ease-out group-hover:scale-110 sm:text-9xl"
           >
             {project.number}
           </span>
-          <span className="mt-4 block font-display text-3xl uppercase tracking-tight text-ink-foreground sm:text-4xl">
+          <span className="mt-4 block font-display text-3xl uppercase tracking-tight text-foreground sm:text-4xl">
             {project.title}
           </span>
           <span className="serif-accent mt-1 block text-xl text-primary">{project.subtitle}</span>
