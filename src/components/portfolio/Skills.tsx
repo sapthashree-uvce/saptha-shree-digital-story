@@ -1,4 +1,4 @@
-import { INTERESTS, SKILL_GROUPS } from "@/lib/portfolio-data";
+import { SKILL_GROUPS } from "@/lib/portfolio-data";
 import { usePortfolio } from "@/context/PortfolioContext";
 import { BrandIcon } from "./BrandIcon";
 import { Reveal } from "./Reveal";
@@ -7,7 +7,6 @@ import { SectionHeading } from "./SectionHeading";
 export function Skills() {
   const { portfolio } = usePortfolio();
   const visibleSkills = (portfolio?.skills || []).filter((s) => s.visible);
-  const interests = portfolio?.interests || INTERESTS;
 
   // Group visible skills by category
   const categoriesInUse = Array.from(new Set(visibleSkills.map((s) => s.category)));
@@ -81,18 +80,6 @@ export function Skills() {
                 </ul>
               </article>
             </Reveal>
-          ))}
-        </div>
-      </div>
-
-      <div className="mt-20 overflow-hidden border-y border-border bg-background py-6" aria-label="Areas of interest">
-        <p className="sr-only">Areas of interest: {interests.join(", ")}</p>
-        <div aria-hidden="true" className="flex w-max animate-marquee gap-10">
-          {[...interests, ...interests, ...interests, ...interests].map((interest, i) => (
-            <span key={i} className="flex items-center gap-10 font-display text-4xl sm:text-5xl">
-              <span className={i % 2 === 0 ? "text-foreground" : "serif-accent text-muted-foreground"}>{interest}</span>
-              <span className="size-3 rounded-full bg-primary" />
-            </span>
           ))}
         </div>
       </div>
