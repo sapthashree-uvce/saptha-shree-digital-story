@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
 
 import { NAV_LINKS, PROFILE } from "@/lib/portfolio-data";
+import { usePortfolio } from "@/context/PortfolioContext";
 import { cn } from "@/lib/utils";
 import { ArrowCircle } from "./ArrowCircle";
 
@@ -37,6 +38,8 @@ function useActiveSection() {
 }
 
 export function Navbar() {
+  const { portfolio } = usePortfolio();
+  const contact = portfolio?.contact || PROFILE;
   const active = useActiveSection();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
@@ -69,9 +72,9 @@ export function Navbar() {
           scrolled ? "mx-3 border border-border/70 bg-background/80 py-2 shadow-card backdrop-blur-xl sm:mx-6 lg:mx-auto" : "py-2",
         )}
       >
-        <a href="#home" className="flex min-w-0 items-center gap-2.5 text-foreground" aria-label={`${PROFILE.name} — home`}>
+        <a href="#home" className="flex min-w-0 items-center gap-2.5 text-foreground" aria-label={`${contact.name || PROFILE.name} — home`}>
           <BrandMark className="shrink-0" />
-          <span className="truncate font-display text-lg tracking-tight">{PROFILE.brand}</span>
+          <span className="truncate font-display text-lg tracking-tight">{contact.brand || PROFILE.brand}</span>
         </a>
 
         <ul className="hidden items-center justify-center gap-8 lg:flex">
@@ -122,7 +125,7 @@ export function Navbar() {
         <div className="flex items-center justify-between">
           <span className="flex items-center gap-2.5">
             <BrandMark />
-            <span className="font-display text-lg">{PROFILE.brand}</span>
+            <span className="font-display text-lg">{contact.brand || PROFILE.brand}</span>
           </span>
           <button
             type="button"

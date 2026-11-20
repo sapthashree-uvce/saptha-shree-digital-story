@@ -1,9 +1,34 @@
 import { INTERESTS, SKILL_GROUPS } from "@/lib/portfolio-data";
+import { usePortfolio } from "@/context/PortfolioContext";
 import { BrandIcon } from "./BrandIcon";
 import { Reveal } from "./Reveal";
 import { SectionHeading } from "./SectionHeading";
 
 export function Skills() {
+  const { portfolio } = usePortfolio();
+  const visibleSkills = (portfolio?.skills || []).filter((s) => s.visible);
+  const interests = portfolio?.interests || INTERESTS;
+
+  // Group visible skills by category
+  const categoriesInUse = Array.from(new Set(visibleSkills.map((s) => s.category)));
+  const dynamicGroups = portfolio
+    ? categoriesInUse.map((cat) => ({
+        title: cat,
+        note:
+          cat === "Programming Languages"
+            ? "The foundations"
+            : cat.includes("Data") || cat.includes("Libraries")
+            ? "Working with data"
+            : cat.includes("Development")
+            ? "Everyday workflow"
+            : cat.includes("Design")
+            ? "Ideas, presented"
+            : "Technical stack",
+        skills: visibleSkills
+          .filter((s) => s.category === cat)
+          .sort((a, b) => a.displayOrder - b.displayOrder),
+      }))
+    : SKILL_GROUPS;
   return (
     <section id="skills" className="py-24 sm:py-32">
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
@@ -20,7 +45,7 @@ export function Skills() {
         </SectionHeading>
 
         <div className="mt-16 grid gap-5 md:grid-cols-2 lg:grid-cols-12">
-          {SKILL_GROUPS.map((group, gi) => (
+          {dynamicGroups.map((group, gi) => (
             <Reveal
               key={group.title}
               delay={gi * 90}
@@ -29,7 +54,7 @@ export function Skills() {
                 "lg:col-span-7",
                 "lg:col-span-7",
                 "lg:col-span-5",
-              ][gi]}
+              ][gi % 4]}
             >
               <article className="group h-full rounded-3xl border border-border bg-card p-6 shadow-card transition-all duration-500 hover:-translate-y-1 hover:border-foreground/30 sm:p-8">
                 <header className="mb-8 flex items-start justify-between gap-4">
@@ -61,9 +86,9 @@ export function Skills() {
       </div>
 
       <div className="mt-20 overflow-hidden border-y border-border bg-background py-6" aria-label="Areas of interest">
-        <p className="sr-only">Areas of interest: {INTERESTS.join(", ")}</p>
+        <p className="sr-only">Areas of interest: {interests.join(", ")}</p>
         <div aria-hidden="true" className="flex w-max animate-marquee gap-10">
-          {[...INTERESTS, ...INTERESTS, ...INTERESTS, ...INTERESTS].map((interest, i) => (
+          {[...interests, ...interests, ...interests, ...interests].map((interest, i) => (
             <span key={i} className="flex items-center gap-10 font-display text-4xl sm:text-5xl">
               <span className={i % 2 === 0 ? "text-foreground" : "serif-accent text-muted-foreground"}>{interest}</span>
               <span className="size-3 rounded-full bg-primary" />

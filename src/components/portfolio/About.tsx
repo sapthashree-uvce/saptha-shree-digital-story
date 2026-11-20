@@ -1,8 +1,14 @@
 import { ABOUT_FACTS, HOBBIES } from "@/lib/portfolio-data";
+import { usePortfolio } from "@/context/PortfolioContext";
 import { Reveal } from "./Reveal";
 import { SectionHeading } from "./SectionHeading";
 
 export function About() {
+  const { portfolio } = usePortfolio();
+  const about = portfolio?.about;
+  const facts = about?.facts || ABOUT_FACTS;
+  const hobbies = about?.hobbies || HOBBIES;
+  const paragraphs = about?.bioParagraphs;
   return (
     <section id="about" className="px-3 sm:px-5">
       <div className="grain relative mx-auto max-w-[88rem] overflow-hidden rounded-[2rem] bg-ink px-5 py-20 text-ink-foreground sm:px-10 sm:py-28 lg:px-16">
@@ -41,7 +47,7 @@ export function About() {
             <Reveal delay={240} className="pt-6">
               <p className="eyebrow mb-4 text-ink-muted">Beyond technology</p>
               <ul className="flex flex-wrap gap-2">
-                {HOBBIES.map((h) => (
+                {hobbies.map((h) => (
                   <li
                     key={h}
                     className="rounded-full border border-ink-line px-4 py-2 text-sm font-bold text-ink-foreground transition-colors duration-300 hover:border-primary hover:text-primary"
@@ -60,7 +66,7 @@ export function About() {
                   <span className="eyebrow text-ink-muted">Quick facts</span>
                   <span className="size-2 rounded-full bg-primary" />
                 </div>
-                {ABOUT_FACTS.map((fact) => (
+                {facts.map((fact) => (
                   <div
                     key={fact.label}
                     className="grid grid-cols-[minmax(0,8.5rem)_minmax(0,1fr)] gap-4 border-t border-ink-line py-4 first-of-type:border-t-0"

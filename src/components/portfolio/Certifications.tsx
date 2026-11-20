@@ -1,6 +1,7 @@
 import { Award, ArrowUpRight, Clock } from "lucide-react";
 
 import { CERTIFICATES, type Certificate } from "@/lib/portfolio-data";
+import { usePortfolio } from "@/context/PortfolioContext";
 import { Reveal } from "./Reveal";
 import { SectionHeading } from "./SectionHeading";
 
@@ -54,24 +55,32 @@ function CertificateCard({ cert, index }: { cert: Certificate; index: number }) 
 }
 
 export function Certifications() {
+  const { portfolio } = usePortfolio();
+  const publishedCertificates = (portfolio?.certificates || []).filter((c) => c.published);
+  const certificates = portfolio ? publishedCertificates : CERTIFICATES;
+
+  if (certificates.length === 0) {
+    return null;
+  }
+
   return (
     <section id="certifications" className="py-24 sm:py-32">
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
         <SectionHeading
           index="05"
           label="Certifications"
-          aside={<p className="font-display text-7xl text-foreground/10">0{CERTIFICATES.length}</p>}
+          aside={<p className="font-display text-7xl text-foreground/10">0{certificates.length}</p>}
         >
           Learning never <span className="serif-accent text-primary">stops.</span>
         </SectionHeading>
 
         <div className="mt-16 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {CERTIFICATES.map((cert, i) => (
+          {certificates.map((cert, i) => (
             <Reveal key={cert.title} delay={i * 80} className={i === 0 ? "lg:row-span-1" : undefined}>
               <CertificateCard cert={cert} index={i} />
             </Reveal>
           ))}
-          <Reveal delay={CERTIFICATES.length * 80}>
+          <Reveal delay={certificates.length * 80}>
             <div className="flex h-full min-h-[14rem] flex-col justify-end rounded-3xl bg-ink p-7 text-ink-foreground">
               <p className="serif-accent text-3xl leading-tight">
                 Every workshop is a <span className="text-primary">new chapter.</span>

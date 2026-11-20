@@ -1,6 +1,7 @@
 import { ArrowDown, Download } from "lucide-react";
 
-import { ABOUT_FACTS, MINI_PROJECTS, PROFILE, PROJECTS } from "@/lib/portfolio-data";
+import { PROFILE } from "@/lib/portfolio-data";
+import { usePortfolio } from "@/context/PortfolioContext";
 import { ArrowCircle } from "./ArrowCircle";
 import { Reveal } from "./Reveal";
 
@@ -13,11 +14,8 @@ function Line({ children, delay }: { children: React.ReactNode; delay: number })
 }
 
 export function Hero() {
-  const strip = [
-    { ...PROJECTS[0]!, tagline: "Frontend & dashboard" },
-    { ...PROJECTS[1]!, tagline: "Ongoing · Computer vision" },
-    { title: MINI_PROJECTS.title, tagline: "Python fundamentals" },
-  ];
+  const { portfolio } = usePortfolio();
+  const resumeUrl = portfolio?.about?.resumeUrl || portfolio?.contact?.resumeUrl || PROFILE.resumeUrl;
 
   return (
     <section id="home" className="relative overflow-hidden pb-20 pt-32 sm:pt-40">
@@ -60,9 +58,9 @@ export function Hero() {
                 Explore My Work
                 <ArrowCircle className="size-10" />
               </a>
-              {PROFILE.resumeUrl ? (
+              {resumeUrl ? (
                 <a
-                  href={PROFILE.resumeUrl}
+                  href={resumeUrl}
                   download="Saptha_Shree_Resume.pdf"
                   className="inline-flex h-14 items-center gap-2 rounded-full border border-foreground/20 px-7 font-bold transition-all duration-300 hover:border-foreground hover:bg-foreground hover:text-background"
                 >
@@ -88,43 +86,6 @@ export function Hero() {
               practical solutions with technology.
             </p>
           </Reveal>
-        </div>
-
-        {/* Bold at-a-glance facts */}
-        <Reveal delay={600} className="mt-14 border-y border-border py-6">
-          <dl className="flex flex-wrap gap-x-10 gap-y-5">
-            {ABOUT_FACTS.map((fact) => (
-              <div key={fact.label}>
-                <dt className="eyebrow text-muted-foreground">{fact.label}</dt>
-                <dd className="mt-1 font-display text-xl uppercase tracking-tight text-foreground">{fact.value}</dd>
-              </div>
-            ))}
-          </dl>
-        </Reveal>
-
-        {/* Project preview strip, text only */}
-        <div className="mt-14 grid gap-5 md:grid-cols-12">
-          {strip.map((item, i) => (
-            <Reveal
-              key={item.title}
-              delay={680 + i * 120}
-              className={i === 0 ? "md:col-span-6" : "md:col-span-3"}
-            >
-              <a
-                href="#projects"
-                className="group flex h-full flex-col justify-between rounded-2xl border border-border bg-card/60 p-6 transition-all duration-300 hover:border-foreground/40 hover:bg-card"
-              >
-                <span className="eyebrow text-muted-foreground">0{i + 1}</span>
-                <span className="mt-10 block">
-                  <span className="block font-display text-2xl uppercase tracking-tight text-foreground">
-                    {item.title}
-                    <sup className="text-primary">®</sup>
-                  </span>
-                  <span className="mt-1 block text-sm font-bold text-muted-foreground">{item.tagline}</span>
-                </span>
-              </a>
-            </Reveal>
-          ))}
         </div>
 
         <a href="#about" className="mt-14 flex items-center gap-3 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground">

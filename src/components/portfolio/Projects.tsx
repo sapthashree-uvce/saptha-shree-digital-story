@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import { MINI_PROJECTS, PROJECTS } from "@/lib/portfolio-data";
+import { usePortfolio } from "@/context/PortfolioContext";
 import { cn } from "@/lib/utils";
 import { GithubIcon } from "./BrandIcon";
 import { ProjectCard, TechTag } from "./ProjectCard";
@@ -8,6 +9,8 @@ import { Reveal } from "./Reveal";
 import { SectionHeading } from "./SectionHeading";
 
 function MiniProjects() {
+  const { portfolio } = usePortfolio();
+  const mini = portfolio?.miniProjects || MINI_PROJECTS;
   const [active, setActive] = useState(0);
 
   return (
@@ -16,14 +19,14 @@ function MiniProjects() {
         <div className="lg:col-span-5">
           <div className="flex items-center gap-3">
             <span className="font-display text-5xl text-primary">03</span>
-            <span className="eyebrow text-ink-muted">Collection · 5 builds</span>
+            <span className="eyebrow text-ink-muted">Collection · {mini.items.length} builds</span>
           </div>
           <h3 className="mt-6 font-display text-4xl sm:text-5xl">
             Python <span className="serif-accent text-primary">mini</span> projects
           </h3>
-          <p className="mt-4 max-w-md leading-relaxed text-ink-foreground/70">{MINI_PROJECTS.description}</p>
+          <p className="mt-4 max-w-md leading-relaxed text-ink-foreground/70">{mini.description}</p>
           <ul className="mt-6 flex flex-wrap gap-2">
-            {MINI_PROJECTS.tags.map((t) => (
+            {mini.tags.map((t) => (
               <TechTag key={t} tone="dark">
                 {t}
               </TechTag>
@@ -33,7 +36,7 @@ function MiniProjects() {
 
         <div className="lg:col-span-6 lg:col-start-7">
           <ol className="border-t border-ink-line">
-            {MINI_PROJECTS.items.map((item, i) => (
+            {mini.items.map((item, i) => (
               <li key={item.name}>
                 <button
                   type="button"
@@ -75,7 +78,7 @@ function MiniProjects() {
             ))}
           </ol>
           <a
-            href={MINI_PROJECTS.github}
+            href={mini.github}
             target="_blank"
             rel="noreferrer"
             className="mt-8 inline-flex h-11 items-center gap-2 rounded-full border border-ink-foreground/25 px-5 text-sm font-semibold transition-all duration-300 hover:border-ink-foreground hover:bg-ink-foreground hover:text-ink"
@@ -89,7 +92,17 @@ function MiniProjects() {
 }
 
 export function Projects() {
-  const [lumen, landing] = PROJECTS;
+  const { portfolio } = usePortfolio();
+  const publishedProjects = (portfolio?.projects || []).filter((p) => p.published);
+  const displayProjects = portfolio ? publishedProjects : PROJECTS;
+  const mini = portfolio?.miniProjects;
+
+  const [first, second, ...rest] = displayProjects;
+
+  if (displayProjects.length === 0 && (!mini || mini.items.length === 0)) {
+    return null;
+  }
+
   return (
     <section id="projects" className="py-24 sm:py-32">
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
@@ -106,16 +119,21 @@ export function Projects() {
         </SectionHeading>
 
         <div className="mt-16 grid gap-16 lg:grid-cols-12 lg:gap-8">
-          {lumen ? (
+          {first ? (
             <Reveal className="lg:col-span-7">
-              <ProjectCard project={lumen} aspect="aspect-[16/11]" />
+              <ProjectCard project={first} aspect="aspect-[16/11]" />
             </Reveal>
           ) : null}
-          {landing ? (
+          {second ? (
             <Reveal delay={150} className="lg:col-span-5 lg:mt-40">
-              <ProjectCard project={landing} aspect="aspect-square" />
+              <ProjectCard project={second} aspect="aspect-square" />
             </Reveal>
           ) : null}
+          {rest.map((proj, i) => (
+            <Reveal key={proj.id || proj.title} delay={200 + i * 80} className="lg:col-span-6">
+              <ProjectCard project={proj} aspect="aspect-[16/10]" />
+            </Reveal>
+          ))}
         </div>
 
         <Reveal className="mt-20">

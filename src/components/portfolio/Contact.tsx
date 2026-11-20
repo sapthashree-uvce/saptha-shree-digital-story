@@ -8,15 +8,10 @@ import { toast } from "sonner";
 import { contactSchema, type ContactInput } from "@/lib/contact-schema";
 import { sendContactMessage } from "@/lib/contact.functions";
 import { PROFILE } from "@/lib/portfolio-data";
+import { usePortfolio } from "@/context/PortfolioContext";
 import { cn } from "@/lib/utils";
 import { GithubIcon, LinkedinIcon } from "./BrandIcon";
 import { Reveal } from "./Reveal";
-
-const CHANNELS = [
-  { label: "Email", value: PROFILE.email, href: `mailto:${PROFILE.email}`, Icon: Mail, external: false },
-  { label: "GitHub", value: PROFILE.githubUser, href: PROFILE.github, Icon: GithubIcon, external: true },
-  { label: "LinkedIn", value: "Saptha Shree", href: PROFILE.linkedin, Icon: LinkedinIcon, external: true },
-];
 
 function Field({
   id,
@@ -48,6 +43,15 @@ const inputClass =
   "w-full rounded-2xl border border-input bg-background px-4 py-3.5 text-base text-foreground outline-none transition-all duration-300 placeholder:text-muted-foreground/60 focus:border-primary focus:ring-4 focus:ring-primary/15";
 
 export function Contact() {
+  const { portfolio } = usePortfolio();
+  const contact = portfolio?.contact || PROFILE;
+
+  const channels = [
+    { label: "Email", value: contact.email, href: `mailto:${contact.email}`, Icon: Mail, external: false },
+    { label: "GitHub", value: contact.githubUser, href: contact.github, Icon: GithubIcon, external: true },
+    { label: "LinkedIn", value: contact.name || "Saptha Shree", href: contact.linkedin, Icon: LinkedinIcon, external: true },
+  ];
+
   const send = useServerFn(sendContactMessage);
   const [sent, setSent] = useState(false);
   const {
@@ -98,7 +102,7 @@ export function Contact() {
               </p>
             </Reveal>
             <ul className="mt-10 border-t border-ink-line">
-              {CHANNELS.map(({ label, value, href, Icon, external }, i) => (
+              {channels.map(({ label, value, href, Icon, external }, i) => (
                 <Reveal as="li" key={label} delay={i * 80}>
                   <a
                     href={href}
