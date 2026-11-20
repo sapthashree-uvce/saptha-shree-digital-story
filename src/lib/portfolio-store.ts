@@ -7,7 +7,6 @@ import {
   EVENTS,
   HOBBIES,
   INTERESTS,
-  MINI_PROJECTS,
   PROFILE,
   PROJECTS,
   SKILL_GROUPS,
@@ -101,13 +100,6 @@ export type ContactData = {
 
 export type PortfolioData = {
   projects: ProjectItem[];
-  miniProjects: {
-    title: string;
-    description: string;
-    items: { name: string; hint: string }[];
-    tags: string[];
-    github: string;
-  };
   skills: SkillItem[];
   skillCategories: string[];
   interests: string[];
@@ -170,13 +162,6 @@ export const DEFAULT_PORTFOLIO_DATA: PortfolioData = {
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   })),
-  miniProjects: {
-    title: MINI_PROJECTS.title,
-    description: MINI_PROJECTS.description,
-    items: MINI_PROJECTS.items.map((i) => ({ ...i })),
-    tags: [...MINI_PROJECTS.tags],
-    github: MINI_PROJECTS.github,
-  },
   skills: initialSkills,
   skillCategories: DEFAULT_SKILL_CATEGORIES,
   interests: [...INTERESTS],
@@ -265,10 +250,6 @@ export function getStoredPortfolio(): PortfolioData {
       certificates: parsed.certificates ?? DEFAULT_PORTFOLIO_DATA.certificates,
       activities: parsed.activities ?? DEFAULT_PORTFOLIO_DATA.activities,
       contact: { ...DEFAULT_PORTFOLIO_DATA.contact, ...(parsed.contact ?? {}) },
-      miniProjects: {
-        ...DEFAULT_PORTFOLIO_DATA.miniProjects,
-        ...(parsed.miniProjects ?? {}),
-      },
     };
   } catch (e) {
     console.error("Failed to parse stored portfolio data:", e);

@@ -126,21 +126,6 @@ export const PROJECTS: Project[] = [
   },
 ];
 
-export const MINI_PROJECTS = {
-  title: "Python Mini Projects",
-  description:
-    "A collection of beginner-level Python projects developed to strengthen programming fundamentals and logical thinking.",
-  items: [
-    { name: "Calculator", hint: "Arithmetic & clean input handling" },
-    { name: "Blackjack", hint: "Card logic, game loops" },
-    { name: "Cipher (Secret Pattern)", hint: "Encoding & decoding text" },
-    { name: "Higher and Lower Game", hint: "Comparisons & scoring" },
-    { name: "Guess the Number Game", hint: "Randomness & conditionals" },
-  ],
-  tags: ["Python"],
-  github: "https://github.com/sapthashree-uvce",
-};
-
 export const ACHIEVEMENT = { title: "Strategy Sprint", result: "1st Place" };
 
 export const DESIGN_TEAMS = [

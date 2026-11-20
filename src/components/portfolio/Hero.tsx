@@ -30,18 +30,12 @@ export function Hero() {
         <h1 className="font-display display-mega font-extrabold text-foreground">
           <span className="sr-only">Saptha Shree — AI{"\u00a0"}&amp; DATA SCIENCE student at UVCE Bengaluru, aspiring data engineer.</span>
           <span aria-hidden="true" className="block">
-            <Line delay={100}>
-              <span className="text-primary">Saptha</span> Shree
-            </Line>
-            <Line delay={220}>
-              <span className="text-primary">AI</span>{"\u00a0"}&amp; DATA SCIENCE
-            </Line>
+            <Line delay={100}>Saptha Shree</Line>
           </span>
         </h1>
 
         <p className="mt-8 max-w-3xl font-display text-2xl uppercase leading-tight tracking-tight text-foreground sm:text-3xl">
-          Second-year student at <span className="text-primary">UVCE, Bengaluru</span> · Aspiring{" "}
-          <span className="text-primary">Data Engineer</span>
+          <span className="text-primary">AI &amp; Data Science</span> Student at UVCE, Bengaluru
         </p>
 
         <div className="mt-12 grid gap-10 lg:grid-cols-12">
