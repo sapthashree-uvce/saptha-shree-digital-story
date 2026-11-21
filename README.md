@@ -31,13 +31,5 @@ Modern editorial-style interface featuring bold typography, asymmetrical layouts
 
 To create a professional digital identity that reflects my technical knowledge, creativity, continuous learning and passion for building practical solutions.
 
-## Development
-
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
-
-```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
-npm run dev
-```
+## Deployment 
+Check out the portfolio: https://saptha-portfolio-2026.vercel.app/ 
