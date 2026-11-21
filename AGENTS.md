@@ -35,3 +35,5 @@ use the editor.
 - The site is one long page at `/` with in-page section anchors (the owner explicitly asked for smooth scrolling between sections).
 - Contact form validation lives in `src/lib/contact-schema.ts` and is shared by the form and the server function, so client and server rules never drift.
 - Never pass portfolio classes through `cn()` with custom `text-*` utilities: tailwind-merge drops them as conflicting font-size/color classes; custom type-size utilities are named `display-*`.
+- Admin-edited portfolio content is one JSON row (`portfolio_content`, id `main`) read publicly and written only by `has_role(admin)` users; localStorage is just a display cache, so saves must hit the database first and surface errors.
+- Admin access requires a real signed-in account with the `admin` role in `user_roles` (granted by a database trigger for the owner's confirmed email); never add browser-side or hardcoded-password admin fallbacks.
