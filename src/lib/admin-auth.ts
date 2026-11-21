@@ -151,6 +151,12 @@ export async function loginAdmin(
     };
   }
 
+  // Show unexpected sign-in problems as they are, instead of hiding them
+  // behind a generic "invalid password" message.
+  if (message && !/invalid login credentials/i.test(message)) {
+    return { success: false, error: `Sign-in failed: ${message}` };
+  }
+
   return {
     success: false,
     error: "Invalid email or password. Please check your credentials.",
