@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 import {
   ABOUT_FACTS,
   ACHIEVEMENT,
@@ -231,7 +232,29 @@ export const DEFAULT_PORTFOLIO_DATA: PortfolioData = {
 export const PORTFOLIO_STORAGE_KEY = "saptha_portfolio_data_v1";
 export const PORTFOLIO_SYNC_EVENT = "saptha_portfolio_sync";
 
-// Safely retrieve stored data
+// Fill any missing sections with defaults so older saved data keeps working
+export function normalizePortfolio(
+  parsed: Partial<PortfolioData> | null | undefined
+): PortfolioData {
+  if (!parsed) return DEFAULT_PORTFOLIO_DATA;
+  return {
+    ...DEFAULT_PORTFOLIO_DATA,
+    ...parsed,
+    projects: parsed.projects ?? DEFAULT_PORTFOLIO_DATA.projects,
+    skills: parsed.skills ?? DEFAULT_PORTFOLIO_DATA.skills,
+    skillCategories:
+      parsed.skillCategories ?? DEFAULT_PORTFOLIO_DATA.skillCategories,
+    interests: parsed.interests ?? DEFAULT_PORTFOLIO_DATA.interests,
+    about: { ...DEFAULT_PORTFOLIO_DATA.about, ...(parsed.about ?? {}) },
+    achievements: parsed.achievements ?? DEFAULT_PORTFOLIO_DATA.achievements,
+    certificates: parsed.certificates ?? DEFAULT_PORTFOLIO_DATA.certificates,
+    activities: parsed.activities ?? DEFAULT_PORTFOLIO_DATA.activities,
+    contact: { ...DEFAULT_PORTFOLIO_DATA.contact, ...(parsed.contact ?? {}) },
+  };
+}
+
+// Browser cache of the last data loaded from / saved to the database.
+// It is only a fast first paint; the database row is the source of truth.
 export function getStoredPortfolio(): PortfolioData {
   if (typeof window === "undefined") {
     return DEFAULT_PORTFOLIO_DATA;
@@ -239,86 +262,77 @@ export function getStoredPortfolio(): PortfolioData {
   try {
     const raw = localStorage.getItem(PORTFOLIO_STORAGE_KEY);
     if (!raw) return DEFAULT_PORTFOLIO_DATA;
-    const parsed = JSON.parse(raw) as Partial<PortfolioData>;
-    return {
-      ...DEFAULT_PORTFOLIO_DATA,
-      ...parsed,
-      projects: parsed.projects ?? DEFAULT_PORTFOLIO_DATA.projects,
-      skills: parsed.skills ?? DEFAULT_PORTFOLIO_DATA.skills,
-      about: { ...DEFAULT_PORTFOLIO_DATA.about, ...(parsed.about ?? {}) },
-      achievements: parsed.achievements ?? DEFAULT_PORTFOLIO_DATA.achievements,
-      certificates: parsed.certificates ?? DEFAULT_PORTFOLIO_DATA.certificates,
-      activities: parsed.activities ?? DEFAULT_PORTFOLIO_DATA.activities,
-      contact: { ...DEFAULT_PORTFOLIO_DATA.contact, ...(parsed.contact ?? {}) },
-    };
+    return normalizePortfolio(JSON.parse(raw) as Partial<PortfolioData>);
   } catch (e) {
     console.error("Failed to parse stored portfolio data:", e);
     return DEFAULT_PORTFOLIO_DATA;
   }
 }
 
-// Persist portfolio data locally and attempt Supabase synchronization
+function cachePortfolio(data: PortfolioData) {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(PORTFOLIO_STORAGE_KEY, JSON.stringify(data));
+    window.dispatchEvent(
+      new CustomEvent(PORTFOLIO_SYNC_EVENT, { detail: data })
+    );
+  } catch (e) {
+    console.error("Failed to cache portfolio locally:", e);
+  }
+}
+
+export const PORTFOLIO_ROW_ID = "main";
+
+// Save to the database first; only cache locally once the database accepted it.
+// Throws when the save fails so the dashboard never reports a false success.
 export async function saveStoredPortfolio(
   data: PortfolioData
 ): Promise<PortfolioData> {
-  if (typeof window !== "undefined") {
-    try {
-      localStorage.setItem(PORTFOLIO_STORAGE_KEY, JSON.stringify(data));
-      window.dispatchEvent(
-        new CustomEvent(PORTFOLIO_SYNC_EVENT, { detail: data })
-      );
-    } catch (e) {
-      console.error("Failed to save portfolio to local storage:", e);
-    }
+  const { data: userData } = await supabase.auth.getUser();
+  const { error } = await supabase.from("portfolio_content").upsert({
+    id: PORTFOLIO_ROW_ID,
+    content: data as unknown as Json,
+    updated_at: new Date().toISOString(),
+    updated_by: userData.user?.id ?? null,
+  });
+
+  if (error) {
+    console.error("Failed to save portfolio to the database:", error);
+    throw new Error(
+      error.code === "42501"
+        ? "You are not signed in as an administrator, so the change was not saved."
+        : `Could not save to the database: ${error.message}`
+    );
   }
 
-  // Attempt Supabase synchronization in the background
-  try {
-    // Attempt saving to a generic 'portfolio_content' table if available
-    const { error } = await supabase
-      .from("portfolio_content" as any)
-      .upsert({
-        id: "main",
-        content: data,
-        updated_at: new Date().toISOString(),
-      })
-      .select();
-
-    if (error) {
-      // Table might not exist yet on Lovable Cloud, which is gracefully handled
-      console.debug("Supabase portfolio_content sync notice:", error.message);
-    }
-  } catch (err) {
-    console.debug("Supabase sync skipped/failed:", err);
-  }
-
+  cachePortfolio(data);
   return data;
 }
 
-// Fetch from Supabase with fallback to local storage
+// Returns the saved portfolio from the database, or null when nothing is saved yet.
+// Throws on network/database errors.
+export async function fetchRemotePortfolio(): Promise<PortfolioData | null> {
+  const { data, error } = await supabase
+    .from("portfolio_content")
+    .select("content")
+    .eq("id", PORTFOLIO_ROW_ID)
+    .maybeSingle();
+  if (error) throw error;
+  if (!data?.content) return null;
+  return normalizePortfolio(data.content as unknown as Partial<PortfolioData>);
+}
+
+// Fetch from the database with fallback to the local cache when offline
 export async function loadPortfolioWithRemote(): Promise<PortfolioData> {
-  const local = getStoredPortfolio();
-
   try {
-    const { data, error } = await supabase
-      .from("portfolio_content" as any)
-      .select("content")
-      .eq("id", "main")
-      .maybeSingle();
-
-    if (!error && data && (data as any).content) {
-      const remoteData = (data as any).content as PortfolioData;
-      if (typeof window !== "undefined") {
-        localStorage.setItem(
-          PORTFOLIO_STORAGE_KEY,
-          JSON.stringify(remoteData)
-        );
-      }
-      return remoteData;
+    const remote = await fetchRemotePortfolio();
+    if (remote) {
+      cachePortfolio(remote);
+      return remote;
     }
+    return DEFAULT_PORTFOLIO_DATA;
   } catch (err) {
-    console.debug("Remote portfolio load notice:", err);
+    console.error("Could not load portfolio from the database:", err);
+    return getStoredPortfolio();
   }
-
-  return local;
 }

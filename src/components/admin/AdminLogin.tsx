@@ -22,13 +22,13 @@ export function AdminLogin() {
     const res = await login(email, password);
     setLoading(false);
     if (!res.success) {
-      setErrorMsg(res.error || "Authentication failed. Please check credentials.");
+      setErrorMsg(res.error || res.notice || "Authentication failed. Please check credentials.");
     }
   };
 
   const handleDemoFill = () => {
+    // Fills the owner email only; never pre-fill a shared password
     setEmail("sapthashree448@gmail.com");
-    setPassword("admin123");
   };
 
   return (

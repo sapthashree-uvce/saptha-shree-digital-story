@@ -9,6 +9,7 @@ import React, {
 import {
   DEFAULT_PORTFOLIO_DATA,
   getStoredPortfolio,
+  fetchRemotePortfolio,
   loadPortfolioWithRemote,
   saveStoredPortfolio,
   PORTFOLIO_SYNC_EVENT,
@@ -26,6 +27,7 @@ import {
   loginAdmin,
   logoutAdmin,
   subscribeAdminAuth,
+  verifyAdminSession,
   type AdminUser,
 } from "@/lib/admin-auth";
 import { toast } from "sonner";
@@ -38,10 +40,10 @@ export type PortfolioContextType = {
   login: (
     email: string,
     pass: string
-  ) => Promise<{ success: boolean; error?: string }>;
+  ) => Promise<{ success: boolean; error?: string; notice?: string }>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
-  savePortfolio: (data: PortfolioData) => Promise<void>;
+  savePortfolio: (data: PortfolioData) => Promise<boolean>;
 
   // Project CRUD
   addProject: (
@@ -107,8 +109,32 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
     const unsub = subscribeAdminAuth((user) => {
       setAdminUser(user);
     });
+    // Re-check the real session and admin role in the database on every load
+    void verifyAdminSession().then(setAdminUser);
     return unsub;
   }, []);
+
+  // One-time move: if nothing is in the database yet, upload the content this
+  // browser was holding so earlier dashboard edits are not lost.
+  const adminId = adminUser?.id;
+  useEffect(() => {
+    if (!adminId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const remote = await fetchRemotePortfolio();
+        if (remote || cancelled) return;
+        const local = getStoredPortfolio();
+        await saveStoredPortfolio(local);
+        if (!cancelled) setPortfolio(local);
+      } catch (err) {
+        console.error("Initial portfolio upload failed:", err);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [adminId]);
 
   // Sync portfolio data
   useEffect(() => {
@@ -145,10 +171,25 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
     setIsLoading(false);
   }, []);
 
+  // Saves to the database; on failure restores the previous content and
+  // shows the error, returning false so callers skip their success message.
   const savePortfolio = useCallback(
-    async (newData: PortfolioData) => {
-      setPortfolio(newData);
-      await saveStoredPortfolio(newData);
+    async (newData: PortfolioData): Promise<boolean> => {
+      let previous: PortfolioData | undefined;
+      setPortfolio((prev) => {
+        previous = prev;
+        return newData;
+      });
+      try {
+        await saveStoredPortfolio(newData);
+        return true;
+      } catch (err) {
+        if (previous) setPortfolio(previous);
+        toast.error(
+          err instanceof Error ? err.message : "Could not save your change."
+        );
+        return false;
+      }
     },
     []
   );
@@ -158,6 +199,11 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
     if (res.success && res.user) {
       setAdminUser(res.user);
       toast.success("Welcome back, Administrator!");
+      // Show the latest saved content right after signing in
+      const latest = await loadPortfolioWithRemote();
+      setPortfolio(latest);
+    } else if (res.notice) {
+      toast.success(res.notice);
     }
     return res;
   }, []);
@@ -182,7 +228,7 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
         ...portfolio,
         projects: [newProj, ...portfolio.projects],
       };
-      await savePortfolio(updated);
+      if (!(await savePortfolio(updated))) return;
       toast.success(`Project "${newProj.title}" added successfully!`);
     },
     [portfolio, savePortfolio]
@@ -198,7 +244,7 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
             : item
         ),
       };
-      await savePortfolio(updated);
+      if (!(await savePortfolio(updated))) return;
       toast.success("Project updated successfully!");
     },
     [portfolio, savePortfolio]
@@ -211,7 +257,7 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
         ...portfolio,
         projects: portfolio.projects.filter((item) => item.id !== id),
       };
-      await savePortfolio(updated);
+      if (!(await savePortfolio(updated))) return;
       toast.success(`Project "${proj?.title ?? ""}" deleted.`);
     },
     [portfolio, savePortfolio]
@@ -243,7 +289,7 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
         ...portfolio,
         skills: [...portfolio.skills, newSkill],
       };
-      await savePortfolio(updated);
+      if (!(await savePortfolio(updated))) return;
       toast.success(`Skill "${newSkill.name}" added!`);
     },
     [portfolio, savePortfolio]
@@ -257,7 +303,7 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
           item.id === id ? { ...item, ...updates } : item
         ),
       };
-      await savePortfolio(updated);
+      if (!(await savePortfolio(updated))) return;
       toast.success("Skill updated!");
     },
     [portfolio, savePortfolio]
@@ -270,7 +316,7 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
         ...portfolio,
         skills: portfolio.skills.filter((s) => s.id !== id),
       };
-      await savePortfolio(updated);
+      if (!(await savePortfolio(updated))) return;
       toast.success(`Skill "${item?.name ?? ""}" deleted.`);
     },
     [portfolio, savePortfolio]
@@ -293,7 +339,7 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
         ...portfolio,
         about: { ...portfolio.about, ...updates },
       };
-      await savePortfolio(updated);
+      if (!(await savePortfolio(updated))) return;
       toast.success("About Me updated successfully!");
     },
     [portfolio, savePortfolio]
@@ -311,7 +357,7 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
         ...portfolio,
         achievements: [...portfolio.achievements, newAch],
       };
-      await savePortfolio(updated);
+      if (!(await savePortfolio(updated))) return;
       toast.success(`Achievement "${newAch.title}" added!`);
     },
     [portfolio, savePortfolio]
@@ -327,7 +373,7 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
             : item
         ),
       };
-      await savePortfolio(updated);
+      if (!(await savePortfolio(updated))) return;
       toast.success("Achievement updated!");
     },
     [portfolio, savePortfolio]
@@ -340,7 +386,7 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
         ...portfolio,
         achievements: portfolio.achievements.filter((a) => a.id !== id),
       };
-      await savePortfolio(updated);
+      if (!(await savePortfolio(updated))) return;
       toast.success(`Achievement "${item?.title ?? ""}" deleted.`);
     },
     [portfolio, savePortfolio]
@@ -358,7 +404,7 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
         ...portfolio,
         certificates: [...portfolio.certificates, newCert],
       };
-      await savePortfolio(updated);
+      if (!(await savePortfolio(updated))) return;
       toast.success(`Certificate "${newCert.title}" added!`);
     },
     [portfolio, savePortfolio]
@@ -374,7 +420,7 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
             : item
         ),
       };
-      await savePortfolio(updated);
+      if (!(await savePortfolio(updated))) return;
       toast.success("Certificate updated!");
     },
     [portfolio, savePortfolio]
@@ -387,7 +433,7 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
         ...portfolio,
         certificates: portfolio.certificates.filter((c) => c.id !== id),
       };
-      await savePortfolio(updated);
+      if (!(await savePortfolio(updated))) return;
       toast.success(`Certificate "${item?.title ?? ""}" deleted.`);
     },
     [portfolio, savePortfolio]
@@ -405,7 +451,7 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
         ...portfolio,
         activities: [...portfolio.activities, newAct],
       };
-      await savePortfolio(updated);
+      if (!(await savePortfolio(updated))) return;
       toast.success(`Activity "${newAct.name}" added!`);
     },
     [portfolio, savePortfolio]
@@ -421,7 +467,7 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
             : item
         ),
       };
-      await savePortfolio(updated);
+      if (!(await savePortfolio(updated))) return;
       toast.success("Activity updated!");
     },
     [portfolio, savePortfolio]
@@ -434,7 +480,7 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
         ...portfolio,
         activities: portfolio.activities.filter((a) => a.id !== id),
       };
-      await savePortfolio(updated);
+      if (!(await savePortfolio(updated))) return;
       toast.success(`Activity "${item?.name ?? ""}" deleted.`);
     },
     [portfolio, savePortfolio]
@@ -447,7 +493,7 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
         ...portfolio,
         contact: { ...portfolio.contact, ...updates },
       };
-      await savePortfolio(updated);
+      if (!(await savePortfolio(updated))) return;
       toast.success("Contact information updated!");
     },
     [portfolio, savePortfolio]
@@ -490,7 +536,7 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function usePortfolio() {
+export function usePortfolio(): PortfolioContextType {
   const context = useContext(PortfolioContext);
   if (!context) {
     // Graceful fallback for non-provider or SSR environments
@@ -502,7 +548,7 @@ export function usePortfolio() {
       login: async () => ({ success: false, error: "Provider not mounted" }),
       logout: async () => {},
       refresh: async () => {},
-      savePortfolio: async () => {},
+      savePortfolio: async () => false,
       addProject: async () => {},
       updateProject: async () => {},
       deleteProject: async () => {},

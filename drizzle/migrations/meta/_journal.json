@@ -8,6 +8,13 @@
       "when": 1794988636014,
       "tag": "0000_create_contact_submissions",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1795245472726,
+      "tag": "0001_portfolio_content_and_admin_roles",
+      "breakpoints": true
     }
   ]
 }
